@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Administración de Categorías</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+    <div id="categorias">
+        <h2>Categorías</h2>
+        <form id="categoriaForm">
+            <input type="hidden" id="categoriaId"/>
+            <label for="nombreCategoria">Nombre:</label>
+            <input type="text" id="nombreCategoria" required/>
+            <button type="submit">Guardar</button>
+        </form>
+        <ul id="listaCategorias"></ul>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/categorias.js"></script>
+</body>
+</html>

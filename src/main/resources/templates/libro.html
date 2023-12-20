@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Administración de Libros</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+    <div id="libros">
+        <h2>Libros</h2>
+        <form id="libroForm">
+            <input type="hidden" id="libroId"/>
+            <label for="tituloLibro">Título:</label>
+            <input type="text" id="tituloLibro" required/>
+            <label for="autorLibro">Autor:</label>
+            <select id="autorLibro" required></select>
+            <button type="submit">Guardar</button>
+        </form>
+        <ul id="listaLibros"></ul>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/libros.js"></script>
+</body>
+</html>
