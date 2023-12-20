@@ -1,6 +1,6 @@
 package com.ejemplo.relaciones.controller;
 
-import com.ejemplo.relaciones.model.Categoria;
+import com.ejemplo.relaciones.dto.CategoriaDTO;
 import com.ejemplo.relaciones.service.CategoriaService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,19 +19,20 @@ public class CategoriaController {
     }
 
     @GetMapping
-    public List<Categoria> listarCategorias() {
+    public List<CategoriaDTO> listarCategorias() {
         return categoriaService.listarCategorias();
     }
 
     @PostMapping
-    public Categoria crearCategoria(@RequestBody Categoria categoria) {
-        return categoriaService.guardarCategoria(categoria);
+    public ResponseEntity<CategoriaDTO> crearCategoria(@RequestBody CategoriaDTO categoriaDto) {
+        CategoriaDTO nuevaCategoria = categoriaService.guardarCategoria(categoriaDto);
+        return ResponseEntity.ok(nuevaCategoria);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Categoria> obtenerCategoria(@PathVariable Long id) {
+    public ResponseEntity<CategoriaDTO> obtenerCategoria(@PathVariable Long id) {
         try {
-            Categoria categoria = categoriaService.obtenerCategoria(id);
+            CategoriaDTO categoria = categoriaService.obtenerCategoria(id);
             return ResponseEntity.ok(categoria);
         } catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
@@ -39,9 +40,9 @@ public class CategoriaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Categoria> actualizarCategoria(@PathVariable Long id, @RequestBody Categoria categoria) {
+    public ResponseEntity<CategoriaDTO> actualizarCategoria(@PathVariable Long id, @RequestBody CategoriaDTO categoriaDto) {
         try {
-            Categoria categoriaActualizada = categoriaService.actualizarCategoria(id, categoria);
+            CategoriaDTO categoriaActualizada = categoriaService.actualizarCategoria(id, categoriaDto);
             return ResponseEntity.ok(categoriaActualizada);
         } catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();

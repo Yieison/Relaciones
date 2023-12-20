@@ -1,6 +1,6 @@
 package com.ejemplo.relaciones.controller;
 
-import com.ejemplo.relaciones.model.Libro;
+import com.ejemplo.relaciones.dto.LibroDTO;
 import com.ejemplo.relaciones.service.LibroService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,26 +19,30 @@ public class LibroController {
     }
 
     @GetMapping
-    public List<Libro> listarLibros() {
+    public List<LibroDTO> listarLibros() {
         return libroService.listarLibros();
     }
 
     @PostMapping
-    public Libro crearLibro(@RequestBody Libro libro) {
-        return libroService.guardarLibro(libro);
+    public ResponseEntity<LibroDTO> crearLibro(@RequestBody LibroDTO libroDto) {
+        LibroDTO nuevoLibro = libroService.guardarLibro(libroDto);
+        return ResponseEntity.ok(nuevoLibro);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Libro> obtenerLibro(@PathVariable Long id) {
-        return libroService.obtenerLibro(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<LibroDTO> obtenerLibro(@PathVariable Long id) {
+        try {
+            LibroDTO libroDto = libroService.obtenerLibro(id);
+            return ResponseEntity.ok(libroDto);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Libro> actualizarLibro(@PathVariable Long id, @RequestBody Libro libro) {
+    public ResponseEntity<LibroDTO> actualizarLibro(@PathVariable Long id, @RequestBody LibroDTO libroDto) {
         try {
-            Libro libroActualizado = libroService.actualizarLibro(id, libro);
+            LibroDTO libroActualizado = libroService.actualizarLibro(id, libroDto);
             return ResponseEntity.ok(libroActualizado);
         } catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();

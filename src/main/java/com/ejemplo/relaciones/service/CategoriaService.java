@@ -2,11 +2,13 @@ package com.ejemplo.relaciones.service;
 
 import com.ejemplo.relaciones.model.Categoria;
 import com.ejemplo.relaciones.repository.CategoriaRepository;
+import com.ejemplo.relaciones.dto.CategoriaDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class CategoriaService {
@@ -17,40 +19,51 @@ public class CategoriaService {
         this.categoriaRepository = categoriaRepository;
     }
 
-    public List<Categoria> listarCategorias() {
-        return categoriaRepository.findAll();
+    public List<CategoriaDTO> listarCategorias() {
+        return categoriaRepository.findAll().stream()
+                                  .map(this::convertirADto)
+                                  .collect(Collectors.toList());
     }
 
     @Transactional
-    public Categoria guardarCategoria(Categoria categoria) {
-        // Aquí se podría agregar lógica adicional antes de guardar la categoría
-        return categoriaRepository.save(categoria);
+    public CategoriaDTO guardarCategoria(CategoriaDTO categoriaDto) {
+        Categoria categoria = convertirAEntidad(categoriaDto);
+        Categoria categoriaGuardada = categoriaRepository.save(categoria);
+        return convertirADto(categoriaGuardada);
     }
 
-    public Categoria obtenerCategoria(Long id) {
-        // Usamos orElseThrow para lanzar una excepción si la categoría no se encuentra
+    public CategoriaDTO obtenerCategoria(Long id) {
         return categoriaRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("No se encontró la Categoría con ID: " + id));
+                                  .map(this::convertirADto)
+                                  .orElseThrow(() -> new NoSuchElementException("No se encontró la Categoría con ID: " + id));
     }
 
     @Transactional
-    public Categoria actualizarCategoria(Long id, Categoria categoria) {
+    public CategoriaDTO actualizarCategoria(Long id, CategoriaDTO categoriaDto) {
         return categoriaRepository.findById(id)
                 .map(categoriaExistente -> {
-                    // Aquí puedes copiar las propiedades que deseas actualizar de 'categoria' a 'categoriaExistente'
-                    categoriaExistente.setNombre(categoria.getNombre());
-                    // ... copiar otras propiedades si son necesarias
-                    return categoriaRepository.save(categoriaExistente);
+                    categoriaExistente.setNombre(categoriaDto.getNombre());
+                    // Aquí puedes copiar las propiedades que deseas actualizar de 'categoriaDto' a 'categoriaExistente'
+                    return convertirADto(categoriaRepository.save(categoriaExistente));
                 }).orElseThrow(() -> new NoSuchElementException("No se encontró la Categoría con ID: " + id));
     }
 
     @Transactional
     public void eliminarCategoria(Long id) {
-        try {
-            categoriaRepository.deleteById(id);
-        } catch (Exception e) {
-            // Aquí se puede manejar de manera más específica la excepción, por ejemplo, si la categoría no se puede eliminar debido a restricciones de clave foránea, etc.
-            throw new IllegalArgumentException("No se pudo eliminar la Categoría con ID: " + id, e);
+        if (!categoriaRepository.existsById(id)) {
+            throw new NoSuchElementException("No se encontró la Categoría con ID: " + id);
         }
+        categoriaRepository.deleteById(id);
+    }
+
+    private CategoriaDTO convertirADto(Categoria categoria) {
+        return new CategoriaDTO(categoria.getId(), categoria.getNombre());
+    }
+
+    private Categoria convertirAEntidad(CategoriaDTO categoriaDto) {
+        Categoria categoria = new Categoria();
+        categoria.setId(categoriaDto.getId());
+        categoria.setNombre(categoriaDto.getNombre());
+        return categoria;
     }
 }

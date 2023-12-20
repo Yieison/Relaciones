@@ -2,11 +2,13 @@ package com.ejemplo.relaciones.service;
 
 import com.ejemplo.relaciones.model.Autor;
 import com.ejemplo.relaciones.repository.AutorRepository;
+import com.ejemplo.relaciones.dto.AutorDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AutorService {
@@ -17,31 +19,36 @@ public class AutorService {
         this.autorRepository = autorRepository;
     }
 
-    public List<Autor> listarAutores() {
-        return autorRepository.findAll();
+    public List<AutorDTO> listarAutores() {
+        return autorRepository.findAll().stream()
+                              .map(this::convertirADto)
+                              .collect(Collectors.toList());
     }
 
     @Transactional
-    public Autor guardarAutor(Autor autor) {
-        // Verificar si el autor ya existe (basado en el nombre)
-        Optional<Autor> autorExistente = autorRepository.findByNombre(autor.getNombre());
+    public AutorDTO guardarAutor(AutorDTO autorDto) {
+        Optional<Autor> autorExistente = autorRepository.findByNombre(autorDto.getNombre());
         if (autorExistente.isPresent()) {
-            throw new IllegalStateException("Ya existe un autor con el nombre " + autor.getNombre());
+            throw new IllegalStateException("Ya existe un autor con el nombre " + autorDto.getNombre());
         }
-        return autorRepository.save(autor);
+        Autor autor = convertirAEntidad(autorDto);
+        Autor autorGuardado = autorRepository.save(autor);
+        return convertirADto(autorGuardado);
     }
 
-    public Optional<Autor> obtenerAutor(Long id) {
-        return autorRepository.findById(id);
+    public AutorDTO obtenerAutor(Long id) {
+        return autorRepository.findById(id)
+                              .map(this::convertirADto)
+                              .orElseThrow(() -> new IllegalStateException("No se encontró el Autor con ID: " + id));
     }
 
     @Transactional
-    public Autor actualizarAutor(Long id, Autor autor) {
+    public AutorDTO actualizarAutor(Long id, AutorDTO autorDto) {
         return autorRepository.findById(id)
                 .map(autorExistente -> {
-                    autorExistente.setNombre(autor.getNombre());
+                    autorExistente.setNombre(autorDto.getNombre());
                     // Aquí puedes agregar la lógica para actualizar otros campos si es necesario
-                    return autorRepository.save(autorExistente);
+                    return convertirADto(autorRepository.save(autorExistente));
                 }).orElseThrow(() -> new IllegalStateException("No se encontró el Autor con ID: " + id));
     }
 
@@ -51,5 +58,16 @@ public class AutorService {
             throw new IllegalStateException("No se encontró el Autor con ID: " + id);
         }
         autorRepository.deleteById(id);
+    }
+
+    private AutorDTO convertirADto(Autor autor) {
+        return new AutorDTO(autor.getId(), autor.getNombre());
+    }
+
+    private Autor convertirAEntidad(AutorDTO autorDto) {
+        Autor autor = new Autor();
+        autor.setId(autorDto.getId());
+        autor.setNombre(autorDto.getNombre());
+        return autor;
     }
 }
